@@ -10,6 +10,13 @@ import (
 	"os"
 )
 
+var (
+	qq_num string
+	auth_key string
+	mirai_api_http_locate string
+	session_key string
+)
+
 func load_ini(ini_path string) *ini.File  {
 	cfg, err := ini.Load(ini_path)
 	if err != nil {
@@ -19,30 +26,49 @@ func load_ini(ini_path string) *ini.File  {
 	return cfg
 }
 
-func get_session_key(host string,auth_key string) string  {
-	auth_key_json, _ := sjson.Set("", "authKey", auth_key)
-	a:=Request_post(host+"/auth",auth_key_json)
-	session_key := gjson.Get(a, "session").Str
-	return session_key
+func get_session_key(session_flow chan bool)   {
+	for {
+		if verify_session_key(){
+			println("sessionkey校验成功")
+			session_flow<-true
+			return
+		}else {
+			println("sessionkey校验失败,重新获取中")
+
+			auth_key_json, _ := sjson.Set("", "auth_key", auth_key)
+			a:=Request_post(mirai_api_http_locate+"/auth",auth_key_json)
+
+			session_key := gjson.Get(a, "session").Str
+			cfg := load_ini("config.ini")
+			cfg.Section("login").Key("session_key").SetValue(session_key)
+			cfg.SaveTo("config.ini")
+			println("sessionkey设置为"+session_key+", 已保存至config.ini")
+		}
+	}
+
+
 }
 
-func verify_session_key(host string,session_key string,qq_num string,session_exist_flag chan bool)  {
+func verify_session_key() bool {
 	mapD := map[string]string{"sessionKey": session_key, "qq": qq_num}
 	mapB, _ := json.Marshal(mapD)
 	//verify_session_key_json, _ := sjson.Set("", "sessionKey", session_key)
-	a:=Request_post(host+"/verify",string(mapB))
+	a:=Request_post(mirai_api_http_locate+"/verify",string(mapB))
 	if  gjson.Get(a, "code").Int()==0{
-		session_exist_flag<- true
+		return true
+	}else {
+		return false
 	}
 }
 
-func begin_ws_listen(host string,session_key string,session_exist_flag chan bool,output_flow chan string)  {
+func begin_ws_listen(session_exist_flag chan bool,output_flow chan string)  {
 	<-session_exist_flag
-	c, _, err := websocket.DefaultDialer.Dial("ws://"+host+"/all?sessionKey="+session_key, nil)
+	c, _, err := websocket.DefaultDialer.Dial("ws://"+mirai_api_http_locate+"/all?sessionKey="+session_key, nil)
 	if err != nil {
 		println("dial:", err)
 	}
 	defer c.Close()
+	fmt.Printf("开始在%s上监听\n",mirai_api_http_locate)
 
 	for {
 		_, message, err := c.ReadMessage()
@@ -57,17 +83,17 @@ func begin_ws_listen(host string,session_key string,session_exist_flag chan bool
 }
 
 func Login(output_flow chan string){
-	session_exist_flag:=make(chan bool)
+	session_key_done:=make(chan bool)
 	cfg := load_ini("config.ini")
-	//fmt.Println("login:", cfg.Section("login").Key("qq").String())
-	host:= cfg.Section("login").Key("mirai_api_http_locate").String()
-	authKey:= cfg.Section("login").Key("authKey").String()
-	qq_num:= cfg.Section("login").Key("qq_num").String()
+	mirai_api_http_locate= cfg.Section("login").Key("mirai_api_http_locate").String()
+	auth_key= cfg.Section("login").Key("auth_key").String()
+	qq_num= cfg.Section("login").Key("qq_num").String()
+	session_key= cfg.Section("login").Key("session_key").String()
 
-	session_key := get_session_key(host,authKey)
-	go verify_session_key(host,session_key,qq_num,session_exist_flag)
-	go begin_ws_listen(host,session_key,session_exist_flag,output_flow)
+	go get_session_key(session_key_done)
 
+
+	go begin_ws_listen(session_key_done,output_flow)
 
 	//value, _ := sjson.Set("", "name.asd", "Anderson")
 	////println(value)
