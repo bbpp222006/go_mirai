@@ -32,3 +32,4 @@ func Request_get(url string) string  {
 	body, _ := ioutil.ReadAll(resp.Body)
 	return string(body)
 }
+

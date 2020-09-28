@@ -3,28 +3,14 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-ini/ini"
 	"github.com/gorilla/websocket"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
-	"os"
 )
 
-var (
-	qq_num string
-	auth_key string
-	mirai_api_http_locate string
-	session_key string
-)
 
-func load_ini(ini_path string) *ini.File  {
-	cfg, err := ini.Load(ini_path)
-	if err != nil {
-		fmt.Printf("Fail to read file: %v", err)
-		os.Exit(1)
-	}
-	return cfg
-}
+
+
 
 func get_session_key(session_flow chan bool)   {
 	for {
@@ -84,11 +70,7 @@ func begin_ws_listen(session_exist_flag chan bool,output_flow chan string)  {
 
 func Login(output_flow chan string){
 	session_key_done:=make(chan bool)
-	cfg := load_ini("config.ini")
-	mirai_api_http_locate= cfg.Section("login").Key("mirai_api_http_locate").String()
-	auth_key= cfg.Section("login").Key("auth_key").String()
-	qq_num= cfg.Section("login").Key("qq_num").String()
-	session_key= cfg.Section("login").Key("session_key").String()
+
 
 	go get_session_key(session_key_done)
 
