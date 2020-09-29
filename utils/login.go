@@ -21,10 +21,11 @@ func get_session_key(session_flow chan bool)   {
 		}else {
 			println("sessionkey校验失败,重新获取中")
 
-			auth_key_json, _ := sjson.Set("", "auth_key", auth_key)
+			auth_key_json, _ := sjson.Set("", "authKey", auth_key)
+			//println(auth_key_json)
 			a:=Request_post(mirai_api_http_locate+"/auth",auth_key_json)
-
-			session_key := gjson.Get(a, "session").Str
+			//println("服务器返回:"+a)
+			session_key = gjson.Get(a, "session").Str
 			cfg := load_ini("config.ini")
 			cfg.Section("login").Key("session_key").SetValue(session_key)
 			cfg.SaveTo("config.ini")
@@ -47,7 +48,7 @@ func verify_session_key() bool {
 	}
 }
 
-func begin_ws_listen(session_exist_flag chan bool,output_flow chan string)  {
+func begin_ws_listen(session_exist_flag chan bool,output_flow  chan <-string)  {
 	<-session_exist_flag
 	c, _, err := websocket.DefaultDialer.Dial("ws://"+mirai_api_http_locate+"/all?sessionKey="+session_key, nil)
 	if err != nil {
@@ -68,7 +69,7 @@ func begin_ws_listen(session_exist_flag chan bool,output_flow chan string)  {
 
 }
 
-func Login(output_flow chan string){
+func Login(output_flow chan <-string){
 	session_key_done:=make(chan bool)
 
 

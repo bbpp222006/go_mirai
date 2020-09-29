@@ -11,6 +11,7 @@ var (
 	auth_key string
 	mirai_api_http_locate string
 	session_key string
+ 	cfg *ini.File
 )
 
 
@@ -24,7 +25,7 @@ func load_ini(ini_path string) *ini.File  {
 }
 
 func init()  {
-	cfg := load_ini("config.ini")
+	cfg = load_ini("config.ini")
 	mirai_api_http_locate= cfg.Section("login").Key("mirai_api_http_locate").String()
 	auth_key= cfg.Section("login").Key("auth_key").String()
 	qq_num= cfg.Section("login").Key("qq_num").String()
