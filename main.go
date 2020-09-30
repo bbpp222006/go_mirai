@@ -15,7 +15,7 @@ func main()  {
 	go utils.Duplicate_chan(origin_flow,main1,spy_flow)
 	go utils.Spy(spy_flow)
 
-	//
+
 	//main2:=make(chan string,100)
 	//spy_flow:=make(chan string,100)
 	go utils.Vip_filter(main1,vip_flow,default_flow)

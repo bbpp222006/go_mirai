@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -41,9 +44,34 @@ func Duplicate_chan(in chan string,out1 chan string,out2 chan string){
 		out1<-message
 		out2<-message
 	}
-
 }
 
 func Filter()  {
 //	暂时还没想好这里该怎么实现一个通用的过滤器
+}
+
+func Quick_reply(origin_message string,str string)  {
+	var sender_qq int64
+	sender_type := gjson.Get(origin_message, "type")
+	if gjson.Get(origin_message, "sender.group.id").Exists() {
+		sender_qq = gjson.Get(origin_message, "sender.group.id").Int()
+	} else {
+		sender_qq = gjson.Get(origin_message, "sender.id").Int()
+	}
+
+	value, _ := sjson.Set("", "sessionKey", session_key)
+	value, _ = sjson.Set(value, "target", sender_qq)
+	value, _ = sjson.Set(value, "messageChain.0",  map[string]interface{}{"type":"Plain","text":str})
+
+
+	println("发送:"+"/send" + sender_type.String() + value)
+	r := Request_post(mirai_api_http_locate+"/send"+sender_type.String(), value)
+	println("服务器返回:" + r)
+}
+
+func Unidecode(str string) string {
+
+	name_str, _ := strconv.Unquote(strings.Replace(strconv.Quote(str), `\\u`, `\u`, -1))
+	return name_str
+
 }

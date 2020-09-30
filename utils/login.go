@@ -32,8 +32,6 @@ func get_session_key(session_flow chan bool)   {
 			println("sessionkey设置为"+session_key+", 已保存至config.ini")
 		}
 	}
-
-
 }
 
 func verify_session_key() bool {
