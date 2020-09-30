@@ -33,3 +33,17 @@ func Request_get(url string) string  {
 	return string(body)
 }
 
+func Duplicate_chan(in chan string,out1 chan string,out2 chan string){
+	message:=""
+	for {
+		message=<-in
+		println(message)
+		out1<-message
+		out2<-message
+	}
+
+}
+
+func Filter()  {
+//	暂时还没想好这里该怎么实现一个通用的过滤器
+}

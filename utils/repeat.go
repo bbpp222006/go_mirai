@@ -9,13 +9,12 @@ import (
 func Repeat(input_str_chan <-chan string)  {
 	threshold:=1
 	output_str_chan:=make(chan string,100)
-	go repeat(output_str_chan)
+	go Repeat_simple(output_str_chan)
 	for {
 		i:=0
 		recent_str:=""
 		for i<threshold{
 			new_str:=<-input_str_chan
-			println(new_str)
 			if is_repeat(new_str,recent_str){
 				i++
 			}else {
@@ -52,7 +51,7 @@ func is_repeat(new_str string,recent_str string) bool {
 	}
 }
 
-func repeat(input_str_chan <-chan string) {
+func Repeat_simple(input_str_chan <-chan string) {
 	for {
 		a := <-input_str_chan
 		println("接收:" + a)

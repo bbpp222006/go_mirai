@@ -3,9 +3,9 @@ package utils
 import "github.com/tidwall/gjson"
 
 func Vip_filter(output_flow <-chan string,vip_flow chan <-string,default_flow  chan <-string)  {
+	var sender_qq string
 	for {
 		origin_str:=<-output_flow
-		var sender_qq string
 		if gjson.Get(origin_str, "sender.group.id").Exists() {
 			sender_qq = gjson.Get(origin_str, "sender.group.id").String()
 		} else {
