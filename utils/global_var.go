@@ -24,10 +24,11 @@ func load_ini(ini_path string) *ini.File  {
 	return cfg
 }
 
-func init()  {
+func Init_global_var()  {
 	cfg = load_ini("config.ini")
 	mirai_api_http_locate= cfg.Section("login").Key("mirai_api_http_locate").String()
 	auth_key= cfg.Section("login").Key("auth_key").String()
 	qq_num= cfg.Section("login").Key("qq_num").String()
 	session_key= cfg.Section("login").Key("session_key").String()
+	return
 }

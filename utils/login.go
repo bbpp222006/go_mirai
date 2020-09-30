@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
+	"time"
 )
 
 
@@ -26,7 +27,6 @@ func get_session_key(session_flow chan bool)   {
 			a:=Request_post(mirai_api_http_locate+"/auth",auth_key_json)
 			//println("服务器返回:"+a)
 			session_key = gjson.Get(a, "session").Str
-			cfg := load_ini("config.ini")
 			cfg.Section("login").Key("session_key").SetValue(session_key)
 			cfg.SaveTo("config.ini")
 			println("sessionkey设置为"+session_key+", 已保存至config.ini")
@@ -44,13 +44,15 @@ func verify_session_key() bool {
 	if  gjson.Get(a, "code").Int()==0{
 		return true
 	}else {
+		println(a,"5s后再次尝试获取")
+		time.Sleep(5*time.Second)
 		return false
 	}
 }
 
 func begin_ws_listen(session_exist_flag chan bool,output_flow  chan <-string)  {
 	<-session_exist_flag
-	c, _, err := websocket.DefaultDialer.Dial("ws://"+mirai_api_http_locate+"/all?sessionKey="+session_key, nil)
+	c, _, err := websocket.DefaultDialer.Dial("ws://"+mirai_api_http_locate+"/message?sessionKey="+session_key, nil)
 	if err != nil {
 		println("dial:", err)
 	}
@@ -72,6 +74,7 @@ func begin_ws_listen(session_exist_flag chan bool,output_flow  chan <-string)  {
 func Login(output_flow chan <-string){
 	session_key_done:=make(chan bool)
 
+	Init_global_var()
 
 	go get_session_key(session_key_done)
 

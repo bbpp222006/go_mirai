@@ -2,7 +2,7 @@ package utils
 
 import "github.com/tidwall/gjson"
 
-func Vip_filter(output_flow <-chan string,vip_flow chan <-string)  {
+func Vip_filter(output_flow <-chan string,vip_flow chan <-string,default_flow  chan <-string)  {
 	for {
 		origin_str:=<-output_flow
 		var sender_qq string
@@ -14,7 +14,7 @@ func Vip_filter(output_flow <-chan string,vip_flow chan <-string)  {
 		if cfg.Section("auth").HasKey(sender_qq){
 			vip_flow<-origin_str
 		}else {
-			continue
+			default_flow<-origin_str
 		}
 
 	}
