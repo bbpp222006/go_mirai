@@ -12,6 +12,7 @@ var (
 	mirai_api_http_locate string
 	session_key string
  	cfg *ini.File
+	proxy_ip string
 )
 
 
@@ -30,5 +31,14 @@ func Init_global_var()  {
 	auth_key= cfg.Section("login").Key("auth_key").String()
 	qq_num= cfg.Section("login").Key("qq_num").String()
 	session_key= cfg.Section("login").Key("session_key").String()
+	Change_proxy()
 	return
+}
+
+func Change_proxy()  {
+	//r, _ := req.Get("http://118.24.52.95/get/")
+	//content := Unidecode(r.String())
+	//proxy_ip=gjson.Get(content, "proxy").String()
+	proxy_ip="34.92.243.136:9529"
+	println("代理ip设置为"+proxy_ip)
 }

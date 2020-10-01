@@ -40,7 +40,7 @@ func Duplicate_chan(in chan string,out1 chan string,out2 chan string){
 	message:=""
 	for {
 		message=<-in
-		println(message)
+		//println(message)
 		out1<-message
 		out2<-message
 	}
